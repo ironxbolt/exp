@@ -317,3 +317,31 @@ let timer = null;
 let seconds = 0;
 let
 
+        
+        # Move obstacles
+        for obstacle in obstacles:
+            obstacle[1] += obstacle_speed
+            if obstacle[1] > SCREEN_HEIGHT:
+                obstacles.remove(obstacle)
+                score += 1
+        
+        # Check collisions
+        for obstacle in obstacles:
+            if (player_x < obstacle[0] + obstacle_width and
+                player_x + player_width > obstacle[0] and
+                player_y < obstacle[1] + obstacle_height and
+                player_y + player_height > obstacle[1]):
+                running = False
+        
+        # Draw everything
+        draw_player(player_x, player_y)
+        for obstacle in obstacles:
+            draw_obstacle(obstacle[0], obstacle[1])
+        display_score(score)
+        
+        pygame.display.update()
+        clock.tick(60)
+    
+    pygame.quit()
+# Run the game
+game_loop()
