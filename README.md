@@ -3,6 +3,90 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Free-Fire Style Flame Background</title>
+<style>
+  html,body{height:100%;margin:0;background:#030305;overflow:hidden;font-family:Arial,Helvetica,sans-serif}
+  /* flame canvas covers full screen */
+  canvas{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0}
+  /* overlay for vignette & color grade */
+  .grade {
+    position:fixed; inset:0; z-index:1; pointer-events:none;
+    background: radial-gradient(ellipse at center, rgba(255,120,20,0.08) 0%, rgba(0,0,0,0.6) 60%);
+    mix-blend-mode: overlay;
+  }
+  /* content container sits above background */
+  .content { position:relative; z-index:2; color:#fff; text-align:center; padding:48px; }
+  h1{ margin:0; font-size:34px; text-transform:uppercase; letter-spacing:2px; text-shadow:0 6px 20px rgba(0,0,0,0.6)}
+  p{opacity:0.85}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="grade"></div>
+
+<div class="content">
+  <h1>Battle Royale Style</h1>
+  <p>Free-fire inspired cinematic flame background (no official assets).</p>
+</div>
+
+<script>
+/* Simple procedural flame + smoke effect (no external libs) */
+const c = document.getElementById('bg'), ctx = c.getContext('2d');
+function resize(){ c.width = innerWidth; c.height = innerHeight; }
+addEventListener('resize', resize, false); resize();
+
+const particles = [];
+function spawn() {
+  const x = Math.random()*c.width;
+  particles.push({
+    x, y: c.height + 20,
+    vx: (Math.random()-0.5)*1.2,
+    vy: - (2 + Math.random()*3),
+    life: 60 + Math.random()*80,
+    size: 30 + Math.random()*60,
+    hue: 20 + Math.random()*40,
+    alpha: 0.8
+  });
+}
+function update(){
+  ctx.clearRect(0,0,c.width,c.height);
+  // background subtle gradient
+  const g = ctx.createLinearGradient(0,0,0,c.height);
+  g.addColorStop(0, '#0b0b0c'); g.addColorStop(1, '#160804');
+  ctx.fillStyle = g; ctx.fillRect(0,0,c.width,c.height);
+
+  if (Math.random() < 0.7) spawn();
+  for (let i = particles.length-1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx; p.y += p.vy; p.life--;
+    // drift and expand
+    p.vx += (Math.random()-0.5)*0.06;
+    p.size *= 0.997;
+    const t = p.life / 140;
+    // draw flame core
+    const grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
+    grd.addColorStop(0, `hsla(${p.hue},100%,60%,${0.9 * t * p.alpha})`);
+    grd.addColorStop(0.5, `hsla(${p.hue+30},90%,45%,${0.5 * t * p.alpha})`);
+    grd.addColorStop(1, `rgba(20,8,5,${0.02 * p.alpha})`);
+    ctx.beginPath(); ctx.fillStyle = grd; ctx.arc(p.x, p.y, Math.max(2,p.size), 0, Math.PI*2); ctx.fill();
+
+    // smoke overlay (subtle darker blob)
+    ctx.beginPath(); ctx.fillStyle = `rgba(30,30,30,${0.06*(1-t)})`;
+    ctx.ellipse(p.x - 10, p.y - 20, p.size*0.9, p.size*0.45, 0, 0, Math.PI*2); ctx.fill();
+
+    if (p.life <= 0 || p.size < 1) particles.splice(i,1);
+  }
+  requestAnimationFrame(update);
+}
+update();
+</script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Colorful Memory Puzzle</title>
 <style>
   :root{
